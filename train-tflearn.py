@@ -5,8 +5,8 @@ from tflearn.layers.conv import *
 from tflearn.layers.estimator import regression
 import tensorflow as tf
 
-model_version = "0"
-model_run = "1"
+model_version = "1"
+model_run = "0"
 model_file = '../Models/'+model_version+'/'+model_run+'/model.tflearn'
 
 tr_f = h5py.File("../Data/train.hdf5", 'r')
@@ -19,6 +19,11 @@ Y_val = val_f['Y']
 
 conv = input_data(shape=[None, 120, 160, 3], dtype=tf.float32)
 with tf.device('/GPU:0'):
+    conv = conv_2d(conv, 16, 3, activation='leaky_relu')
+    conv = conv_2d(conv, 16, 3, activation='leaky_relu')
+    conv = conv_2d(conv, 16, 3, activation='leaky_relu')
+    conv = max_pool_2d(conv, 3, strides=2)
+    conv = conv_2d(conv, 16, 3, activation='leaky_relu')
     conv = conv_2d(conv, 16, 3, activation='leaky_relu')
     conv = max_pool_2d(conv, 3, strides=2)
     conv = conv_2d(conv, 16, 3, activation='leaky_relu')
