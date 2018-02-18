@@ -6,7 +6,7 @@ from tflearn.layers.estimator import regression
 from tflearn.metrics import R2
 import tensorflow as tf
 
-model_version = "1"
+model_version = "2"
 model_run = "1"
 model_file = '../Models/'+model_version+'/'+model_run+'/model.tflearn'
 
@@ -29,7 +29,8 @@ with tf.device('/GPU:0'):
     conv = conv_2d(conv, 16, 3, activation='leaky_relu')
     conv = max_pool_2d(conv, 3, strides=2)
     conv = conv_2d(conv, 16, 3, activation='leaky_relu')
-    conv = fully_connected(conv*100, 2)
+    conv = conv_2d(conv, 16, 3, activation='leaky_relu')
+    conv = fully_connected(conv, 2)
 conv = regression(conv, optimizer='adam', metric=R2(),
                      loss='mean_square',
                      learning_rate=0.0001)
