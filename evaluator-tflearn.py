@@ -41,7 +41,7 @@ num_under_five = 0
 
 for i in range(len(Y)):
     pred = model.predict([X[i]])
-    dist = np.sqrt(np.sum(np.square(pred-Y[i])))
+    dist = np.sqrt(np.sum(np.square(pred[0]-Y[i])))
     print(pred-Y[i])
     if(dist < 5):
         num_under_five += 1
