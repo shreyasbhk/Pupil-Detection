@@ -45,7 +45,7 @@ def get_data_from_file(filename, image_dimensions):
         if ret==True:
             frame = preprocess_image(frame, image_dimensions)
             text_labels = list_labels[frame_number].strip().split(' ')
-            arr_labels = np.asarray([int(100*float(text_labels[0])), int(100*float(text_labels[1]))])
+            arr_labels = np.asarray([int(float(text_labels[0])), int(float(text_labels[1]))])
             temp_array.append([frame, arr_labels])
             frame_number += 1
         else:

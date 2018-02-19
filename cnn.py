@@ -14,12 +14,12 @@ tfe.enable_eager_execution()
 number_of_runs = 3
 model_version = 16
 
-batch_size = 64
+batch_size = 128
 val_batch_size = 128
-learning_rate = 0.00000001
+learning_rate = 0.0001
 num_epochs = 35
 
-image_dimensions = (240, 320)
+image_dimensions = (120, 160)
 train_dataset_file = "../Data/train-"+str(image_dimensions[0]) + "x" + str(image_dimensions[1]) + ".tfrecords"
 val_dataset_file = "../Data/val-"+str(image_dimensions[0]) + "x" + str(image_dimensions[1]) + ".tfrecords"
 test_dataset_file = "../Data/test-"+str(image_dimensions[0]) + "x" + str(image_dimensions[1]) + ".tfrecords"
@@ -89,6 +89,13 @@ class ConCaDNet(tfe.Network):
         self.l3_3 = self.track_layer(tf.layers.Conv2D(16, 3, strides=1, padding="SAME", name="Conv_3_3",
                                                       activation=tf.nn.leaky_relu))
         self.l3_mp = self.track_layer(tf.layers.MaxPooling2D(3, strides=2, name="Conv_3_mp", padding="SAME"))
+
+        self.l3_1 = self.track_layer(tf.layers.Conv2D(16, 3, strides=1, padding="SAME", name="Conv_3_1",
+                                                      activation=tf.nn.leaky_relu))
+        self.l3_2 = self.track_layer(tf.layers.Conv2D(16, 3, strides=1, padding="SAME", name="Conv_3_2",
+                                                      activation=tf.nn.leaky_relu))
+        self.l3_3 = self.track_layer(tf.layers.Conv2D(16, 3, strides=1, padding="SAME", name="Conv_3_3",
+                                                      activation=tf.nn.leaky_relu))
 
         self.fc_out = self.track_layer(tf.layers.Dense(units=2))
 

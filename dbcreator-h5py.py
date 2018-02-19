@@ -3,16 +3,19 @@ import cv2
 import numpy as np
 
 def initialize_datasets(location, image_dimensions):
-    f = h5py.File(location+'/train.hdf5', 'w')
-    dsetx = f.create_dataset("X", (1, image_dimensions[0], image_dimensions[1], 3), maxshape=(None, image_dimensions[0], image_dimensions[1], 3))
+    f = h5py.File(location+"/train-"+str(image_dimensions[0])+"x"+str(image_dimensions[1])+".hdf5", 'w')
+    dsetx = f.create_dataset("X", (1, image_dimensions[0], image_dimensions[1], 1),
+                             maxshape=(None, image_dimensions[0], image_dimensions[1], 1))
     dsety = f.create_dataset("Y", (1, 2), maxshape=(None, 2))
     f.close()
-    f = h5py.File(location+'/val.hdf5', 'w')
-    dsetx = f.create_dataset("X", (1, image_dimensions[0], image_dimensions[1], 3), maxshape=(None, image_dimensions[0], image_dimensions[1], 3))
+    f = h5py.File(location+"/val-"+str(image_dimensions[0])+"x"+str(image_dimensions[1])+".hdf5", 'w')
+    dsetx = f.create_dataset("X", (1, image_dimensions[0], image_dimensions[1], 1),
+                             maxshape=(None, image_dimensions[0], image_dimensions[1], 1))
     dsety = f.create_dataset("Y", (1, 2), maxshape=(None, 2))
     f.close()
-    f = h5py.File(location+'/test.hdf5', 'w')
-    dsetx = f.create_dataset("X", (1, image_dimensions[0], image_dimensions[1], 3), maxshape=(None, image_dimensions[0], image_dimensions[1], 3))
+    f = h5py.File(location+"/test-"+str(image_dimensions[0])+"x"+str(image_dimensions[1])+".hdf5", 'w')
+    dsetx = f.create_dataset("X", (1, image_dimensions[0], image_dimensions[1], 1),
+                             maxshape=(None, image_dimensions[0], image_dimensions[1], 1))
     dsety = f.create_dataset("Y", (1, 2), maxshape=(None, 2))
     f.close()
 
@@ -29,7 +32,6 @@ def write_to_hdf5(data, dataset_file):
         dsety[old_len+i] = data[i][1]
     f.close()
 
-
 def get_data_from_file(filename, image_dimensions):
     """
     A function that accepts the filename of the case and
@@ -39,6 +41,9 @@ def get_data_from_file(filename, image_dimensions):
     """
     def preprocess_image(data, image_dimensions):
         image = cv2.resize(data, (image_dimensions[1], image_dimensions[0]))
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        image = image.astype(np.float32)
+        image = np.expand_dims(image, axis=-1)
         return image
     cap = cv2.VideoCapture(filename+'.avi')
     file = open(filename+'.txt')
@@ -50,7 +55,7 @@ def get_data_from_file(filename, image_dimensions):
         if ret==True:
             frame = preprocess_image(frame, image_dimensions)
             text_labels = list_labels[frame_number].strip().split(' ')
-            arr_labels = [np.float32(text_labels[0]), np.float32(text_labels[1])]
+            arr_labels = np.asarray([int(float(text_labels[0])), int(float(text_labels[1]))])
             temp_array.append([frame, arr_labels])
             frame_number += 1
         else:
@@ -73,12 +78,15 @@ def main(labels_file, data_directory, image_dimensions):
         num_train = int(0.8 * len(data_to_store))
         num_val = int(0.05 * len(data_to_store))
         num_test = len(data_to_store) - num_val - num_train
-        write_to_hdf5(data_to_store[:num_train], data_directory+"/train.hdf5")
-        write_to_hdf5(data_to_store[num_train:num_val + num_train], data_directory+"/val.hdf5")
-        write_to_hdf5(data_to_store[-num_test:], data_directory+"/test.hdf5")
+        write_to_hdf5(data_to_store[:num_train],
+                      data_directory+"/train-"+str(image_dimensions[0])+"x"+str(image_dimensions[1])+".hdf5")
+        write_to_hdf5(data_to_store[num_train:num_val + num_train],
+                      data_directory+"/val-"+str(image_dimensions[0])+"x"+str(image_dimensions[1])+".hdf5")
+        write_to_hdf5(data_to_store[-num_test:],
+                      data_directory+"/test-"+str(image_dimensions[0])+"x"+str(image_dimensions[1])+".hdf5")
 
 if __name__ == "__main__":
-    image_dimensions = (240, 320)
+    image_dimensions = (180, 240)
     data_directory = "../Data/"
     labels_file = "../Data/LPW/labels.txt"
     #get_data_from_file('../Dataset/LPW/1/1')
