@@ -27,6 +27,7 @@ Y_test = te_f['Y']
 chunk_size = 10000
 batch_size = 1000
 val_batch_size = 1000
+test_batch_size = 1000
 num_batches = int(len(Y)/chunk_size)
 num_epochs = 5
 
@@ -69,21 +70,24 @@ for j in range(num_epochs):
         print("Model Prediction:" + str(pred[0]))
         print("Actual Value:" + str(Y_val[rand_example]))
         print("Pixel Distance:" + str(np.sqrt(np.sum(np.square(pred[0]-Y_val[rand_example])))))
-        total_chunks_done += 1
         print("Num Chunks Completed: "+str(total_chunks_done))
         if total_chunks_done%3 ==0:
             model.save(model_file=str(model_file+str(j)+str(i)))
             num_under_five = 0
             test_ds_len = len(Y_test)
-            for t in range(int(test_ds_len/batch_size)):
+            for t in range(int(test_ds_len/batch_size)-1):
                 strt = batch_size * t
-                stp = start + batch_size
+                stp = strt + batch_size
+                #print("Start Test Num: "+str(strt))
+                #print("Stop Test Num: "+str(stp))
                 pred = model.predict(X_test[strt:stp])
-                distances = np.sqrt(np.sum(np.square(pred - Y_test[strt:stp])))
+                distances = np.sqrt(np.sum(np.square(np.subtract(pred[:], Y_test[strt:stp])), axis=1, keepdims=True))
+                #print(distances)
                 for dist in distances:
                     if dist <= 5:
                         num_under_five += 1
             print("Model Testing Accuracy: " + str(num_under_five/test_ds_len))
+        total_chunks_done += 1
 
 tr_f.close()
 val_f.close()
