@@ -18,6 +18,7 @@ def train_cnn_model(run_number):
         os.makedirs(model_dir)
     for epoch in range(1, num_epochs):
         print("Epoch #"+str(epoch))
+        tf.train.get_or_create_global_step()
         with tfe.restore_variables_on_create(tf.train.latest_checkpoint(model_dir)):
             train_one_epoch(model, optimizer, epoch, run_number, log_interval=5)
 

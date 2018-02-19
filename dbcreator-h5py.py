@@ -78,7 +78,7 @@ def main(labels_file, data_directory, image_dimensions):
         write_to_hdf5(data_to_store[-num_test:], data_directory+"/test.hdf5")
 
 if __name__ == "__main__":
-    image_dimensions = (120, 160)
+    image_dimensions = (240, 320)
     data_directory = "../Data/"
     labels_file = "../Data/LPW/labels.txt"
     #get_data_from_file('../Dataset/LPW/1/1')

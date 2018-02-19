@@ -6,8 +6,8 @@ import numpy as np
 import tensorflow as tf
 
 def write_to_tfrecords(data, writer):
-    def _float_feature(value):
-        return tf.train.Feature(float_list=tf.train.FloatList(value=value))
+    def _int64_feature(value):
+        return tf.train.Feature(int64_list=tf.train.Int64List(value=[value]))
     def _bytes_feature(value):
         return tf.train.Feature(bytes_list=tf.train.BytesList(value=[value]))
 
@@ -16,9 +16,9 @@ def write_to_tfrecords(data, writer):
         xlabel = data[i][1][0]
         ylabel = data[i][1][1]
         example = tf.train.Example(features=tf.train.Features(feature={
-            'image': _bytes_feature(image),
-            'x-label': _float_feature(xlabel),
-            'y-label': _float_feature(ylabel)
+            'X': _bytes_feature(image),
+            'Yx': _int64_feature(xlabel),
+            'Yy': _int64_feature(ylabel)
         }))
         writer.write(example.SerializeToString())
 
@@ -31,7 +31,9 @@ def get_data_from_file(filename, image_dimensions):
     :return: a 2-d array of video frames and their corresponding coordinate labels
     """
     def preprocess_image(data, image_dimensions):
-        image = cv2.resize(data, image_dimensions)
+        image = cv2.resize(data, (image_dimensions[1], image_dimensions[0]))
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        image = image.astype(np.float32)
         return image
     cap = cv2.VideoCapture(filename+'.avi')
     file = open(filename+'.txt')
@@ -43,7 +45,7 @@ def get_data_from_file(filename, image_dimensions):
         if ret==True:
             frame = preprocess_image(frame, image_dimensions)
             text_labels = list_labels[frame_number].strip().split(' ')
-            arr_labels = [[np.float16(text_labels[0])], [np.float16(text_labels[1])]]
+            arr_labels = np.asarray([int(100*float(text_labels[0])), int(100*float(text_labels[1]))])
             temp_array.append([frame, arr_labels])
             frame_number += 1
         else:
@@ -73,8 +75,8 @@ def main(labels_file, data_directory, image_dimensions):
         num_val = int(0.05*len(data_to_store))
         num_test = len(data_to_store)-num_val-num_train
         write_to_tfrecords(data_to_store[:num_train], tr_writer)
-        write_to_tfrecords(data_to_store[num_train:num_val+num_train], te_writer)
-        write_to_tfrecords(data_to_store[-num_test:], tv_writer)
+        write_to_tfrecords(data_to_store[num_train:num_val+num_train], tv_writer)
+        write_to_tfrecords(data_to_store[-num_test:], te_writer)
     tr_writer.close()
     te_writer.close()
     tv_writer.close()
