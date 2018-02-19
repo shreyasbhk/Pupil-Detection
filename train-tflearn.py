@@ -75,9 +75,9 @@ for j in range(num_epochs):
             model.save(model_file=str(model_file+str(j)+str(i)))
             num_under_five = 0
             test_ds_len = len(Y_test)
-            for t in range(int(test_ds_len/batch_size)-1):
-                strt = batch_size * t
-                stp = strt + batch_size
+            for t in range(int(test_ds_len/test_batch_size)-1):
+                strt = test_batch_size * t
+                stp = strt + test_batch_size
                 #print("Start Test Num: "+str(strt))
                 #print("Stop Test Num: "+str(stp))
                 pred = model.predict(X_test[strt:stp])
