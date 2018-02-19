@@ -86,7 +86,7 @@ def main(labels_file, data_directory, image_dimensions):
                       data_directory+"/test-"+str(image_dimensions[0])+"x"+str(image_dimensions[1])+".hdf5")
 
 if __name__ == "__main__":
-    image_dimensions = (180, 240)
+    image_dimensions = (240, 320)
     data_directory = "../Data/"
     labels_file = "../Data/LPW/labels.txt"
     #get_data_from_file('../Dataset/LPW/1/1')
