@@ -7,7 +7,7 @@ from tflearn.metrics import R2
 from tensorflow.contrib.losses import mean_pairwise_squared_error
 import tensorflow as tf
 
-model_version = "6"
+model_version = "7"
 model_run = "1"
 model_file = '../Models/'+model_version+'/'+model_run+'/model'
 image_dimensions = (240, 320)
@@ -21,8 +21,8 @@ X_val = val_f['X']
 Y_val = val_f['Y']
 
 chunk_size = 10000
-batch_size = 750
-val_batch_size = 750
+batch_size = 1000
+val_batch_size = 1000
 num_batches = int(len(Y)/chunk_size)
 num_epochs = 5
 
@@ -33,7 +33,8 @@ tflearn.init_graph(num_cores=8, gpu_memory_fraction=0.9, soft_placement=True)
 with tf.device('/gpu:0'):
     conv = input_data(shape=[None, image_dimensions[0], image_dimensions[1], 1], dtype=tf.float32)
     conv = conv-tf.reduce_min(conv)
-    conv = (conv/tf.reduce_max(conv))-0.5
+    conv = -1*((conv/tf.reduce_max(conv))-0.5)
+    conv = 100*flatten(conv)
     conv = fully_connected(conv, 2)
     conv = regression(conv, optimizer='adam', metric=R2(),
                          loss=mean_pairwise_squared_error,
