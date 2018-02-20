@@ -5,6 +5,9 @@ from tflearn.layers.conv import *
 from tflearn.layers.estimator import regression
 from tflearn.metrics import R2
 import tensorflow as tf
+import tensorflow.contrib.slim as slim
+
+
 
 model_version = "12"
 model_run = "1"
@@ -24,9 +27,9 @@ X_test = te_f['X']
 Y_test = te_f['Y']
 
 chunk_size = 5120
-batch_size = 64
-val_batch_size = 64
-test_batch_size = 64
+batch_size = 128
+val_batch_size = 128
+test_batch_size = 128
 num_batches = int(len(Y)/chunk_size)
 num_epochs = 5
 
@@ -35,42 +38,42 @@ with tf.device('/cpu:0'):
 tflearn.init_graph(num_cores=8, gpu_memory_fraction=0.9, soft_placement=True)
 
 with tf.device('/gpu:0'):
-    conv = input_data(shape=[None, image_dimensions[0], image_dimensions[1], 1], dtype=tf.float32)
-    conv = conv-tf.reduce_min(conv)
-    input_conv = -1*((conv/tf.reduce_max(conv))-0.5)
+    x = tflearn.input_data(shape=[None, 224, 224, 3], name='input')
 
-    conv = conv_2d(input_conv, 32, 3, activation='leaky_relu')
-    conv = conv_2d(conv, 16, 3, activation='leaky_relu')
-    conv = max_pool_2d(conv, 2, 2)
-    conv = conv_2d(conv, 16, 5, activation='leaky_relu')
-    conv = conv_2d(conv, 16, 5, activation='leaky_relu')
-    conv = max_pool_2d(conv, 2, 2)
-    conv = conv_2d(conv, 8, 7, activation='leaky_relu')
-    conv = conv_2d(conv, 8, 7, activation='leaky_relu')
-    conv = max_pool_2d(conv, 2, 2)
-    conv = conv_2d(conv, 4, 9, activation='leaky_relu')
-    conv1 = conv_2d(conv, 4, 9, activation='leaky_relu')
+    x = tflearn.conv_2d(x, 64, 3, activation='relu', scope='conv1_1')
+    x = tflearn.conv_2d(x, 64, 3, activation='relu', scope='conv1_2')
+    x = tflearn.max_pool_2d(x, 2, strides=2, name='maxpool1')
 
-    conv = conv_2d(input_conv, 32, 9, activation='leaky_relu')
-    conv = conv_2d(conv, 16, 9, activation='leaky_relu')
-    conv = max_pool_2d(conv, 2, 2)
-    conv = conv_2d(conv, 16, 7, activation='leaky_relu')
-    conv = conv_2d(conv, 16, 7, activation='leaky_relu')
-    conv = max_pool_2d(conv, 2, 2)
-    conv = conv_2d(conv, 8, 5, activation='leaky_relu')
-    conv = conv_2d(conv, 8, 5, activation='leaky_relu')
-    conv = max_pool_2d(conv, 2, 2)
-    conv = conv_2d(conv, 4, 3, activation='leaky_relu')
-    conv2 = conv_2d(conv, 4, 3, activation='leaky_relu')
+    x = tflearn.conv_2d(x, 128, 3, activation='relu', scope='conv2_1')
+    x = tflearn.conv_2d(x, 128, 3, activation='relu', scope='conv2_2')
+    x = tflearn.max_pool_2d(x, 2, strides=2, name='maxpool2')
 
-    conv = tf.concat([conv1, conv2], axis=3)
-    conv = flatten(conv)
-    conv1 = fully_connected(conv, 1)
-    conv2 = fully_connected(conv, 1)
-    conv = tf.concat([conv1, conv2], axis=1)
+    x = tflearn.conv_2d(x, 256, 3, activation='relu', scope='conv3_1')
+    x = tflearn.conv_2d(x, 256, 3, activation='relu', scope='conv3_2')
+    x = tflearn.conv_2d(x, 256, 3, activation='relu', scope='conv3_3')
+    x = tflearn.max_pool_2d(x, 2, strides=2, name='maxpool3')
+
+    x = tflearn.conv_2d(x, 512, 3, activation='relu', scope='conv4_1')
+    x = tflearn.conv_2d(x, 512, 3, activation='relu', scope='conv4_2')
+    x = tflearn.conv_2d(x, 512, 3, activation='relu', scope='conv4_3')
+    x = tflearn.max_pool_2d(x, 2, strides=2, name='maxpool4')
+
+    x = tflearn.conv_2d(x, 512, 3, activation='relu', scope='conv5_1')
+    x = tflearn.conv_2d(x, 512, 3, activation='relu', scope='conv5_2')
+    x = tflearn.conv_2d(x, 512, 3, activation='relu', scope='conv5_3')
+    x = tflearn.max_pool_2d(x, 2, strides=2, name='maxpool5')
+
+    x = tflearn.fully_connected(x, 4096, activation='relu', scope='fc6')
+    x = tflearn.dropout(x, 0.5, name='dropout1')
+
+    x = tflearn.fully_connected(x, 4096, activation='relu', scope='fc7')
+    x = tflearn.dropout(x, 0.5, name='dropout2')
+
+    conv = fully_connected(x, 2, restore=False)
+
     conv = regression(conv, optimizer='adam', metric=R2(),
                          loss=tf.losses.mean_squared_error,
-                         learning_rate=0.001)
+                         learning_rate=0.001, restore=False)
     model = tflearn.DNN(conv, tensorboard_dir=str("../Models/" + model_version + '/' + model_run + '/Tensorboard/'),
                         tensorboard_verbose=1)
     '''model.fit(X, Y, n_epoch=1, shuffle=True, batch_size=64,
@@ -78,6 +81,7 @@ with tf.device('/gpu:0'):
                 validation_batch_size=64, show_metric=True, run_id=str("Model-"+model_version+'-'+model_run),
               snapshot_step=50)
 '''
+model.load(model_file='../vgg_16.ckpt')
 val_set_length = len(Y_val)
 total_chunks_done = 0
 for j in range(num_epochs):
@@ -101,15 +105,12 @@ for j in range(num_epochs):
             model.save(model_file=str(model_file+str(j)+str(i)))
             num_under_five = 0
             test_ds_len = len(Y_test)
-            for t in range(int(test_ds_len/test_batch_size)):
-                strt = test_batch_size*t
-                pred = model.predict(X_test[strt:strt+test_batch_size])
-                distances = np.sqrt(np.sum(np.square(np.subtract(pred, Y_test[strt:strt+test_batch_size])),
-                                           axis=1, keepdims=True))
-                for dist in distances:
-                    if dist <= 5:
-                        num_under_five += 1
-            print("Model Testing Accuracy: " + str(num_under_five/test_ds_len))
+            '''for t in range(test_ds_len):
+                pred = model.predict([X_test[t]])
+                dist = np.sqrt(np.sum(np.square(np.subtract(pred[0], Y_test[t]))))
+                if dist <= 5:
+                    num_under_five += 1
+            print("Model Testing Accuracy: " + str(num_under_five/test_ds_len))'''
         total_chunks_done += 1
 
 tr_f.close()

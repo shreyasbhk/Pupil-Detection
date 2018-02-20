@@ -4,18 +4,18 @@ import numpy as np
 
 def initialize_datasets(location, image_dimensions):
     f = h5py.File(location+"/train-"+str(image_dimensions[0])+"x"+str(image_dimensions[1])+".hdf5", 'w')
-    dsetx = f.create_dataset("X", (1, image_dimensions[0], image_dimensions[1], 1),
-                             maxshape=(None, image_dimensions[0], image_dimensions[1], 1))
+    dsetx = f.create_dataset("X", (1, image_dimensions[0], image_dimensions[1], 3),
+                             maxshape=(None, image_dimensions[0], image_dimensions[1], 3))
     dsety = f.create_dataset("Y", (1, 2), maxshape=(None, 2))
     f.close()
     f = h5py.File(location+"/val-"+str(image_dimensions[0])+"x"+str(image_dimensions[1])+".hdf5", 'w')
-    dsetx = f.create_dataset("X", (1, image_dimensions[0], image_dimensions[1], 1),
-                             maxshape=(None, image_dimensions[0], image_dimensions[1], 1))
+    dsetx = f.create_dataset("X", (1, image_dimensions[0], image_dimensions[1], 3),
+                             maxshape=(None, image_dimensions[0], image_dimensions[1], 3))
     dsety = f.create_dataset("Y", (1, 2), maxshape=(None, 2))
     f.close()
     f = h5py.File(location+"/test-"+str(image_dimensions[0])+"x"+str(image_dimensions[1])+".hdf5", 'w')
-    dsetx = f.create_dataset("X", (1, image_dimensions[0], image_dimensions[1], 1),
-                             maxshape=(None, image_dimensions[0], image_dimensions[1], 1))
+    dsetx = f.create_dataset("X", (1, image_dimensions[0], image_dimensions[1], 3),
+                             maxshape=(None, image_dimensions[0], image_dimensions[1], 3))
     dsety = f.create_dataset("Y", (1, 2), maxshape=(None, 2))
     f.close()
 
@@ -41,9 +41,9 @@ def get_data_from_file(filename, image_dimensions):
     """
     def preprocess_image(data, image_dimensions):
         image = cv2.resize(data, (image_dimensions[1], image_dimensions[0]))
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        #image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         image = image.astype(np.float32)
-        image = np.expand_dims(image, axis=-1)
+        #image = np.expand_dims(image, axis=-1)
         return image
     cap = cv2.VideoCapture(filename+'.avi')
     file = open(filename+'.txt')
@@ -86,7 +86,7 @@ def main(labels_file, data_directory, image_dimensions):
                       data_directory+"/test-"+str(image_dimensions[0])+"x"+str(image_dimensions[1])+".hdf5")
 
 if __name__ == "__main__":
-    image_dimensions = (480, 640)
+    image_dimensions = (224, 224)
     data_directory = "../Data/"
     labels_file = "../Data/LPW/labels.txt"
     #get_data_from_file('../Dataset/LPW/1/1')
