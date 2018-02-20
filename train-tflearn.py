@@ -7,7 +7,7 @@ from tflearn.metrics import R2
 from tensorflow.contrib.losses import mean_pairwise_squared_error
 import tensorflow as tf
 
-model_version = "8"
+model_version = "9"
 model_run = "1"
 model_file = '../Models/'+model_version+'/'+model_run+'/model'
 image_dimensions = (240, 320)
@@ -24,10 +24,10 @@ te_f = h5py.File("../Data/test-"+str(image_dimensions[0])+"x"+str(image_dimensio
 X_test = te_f['X']
 Y_test = te_f['Y']
 
-chunk_size = 10000
-batch_size = 1000
-val_batch_size = 1000
-test_batch_size = 1000
+chunk_size = 5120
+batch_size = 512
+val_batch_size = 512
+test_batch_size = 512
 num_batches = int(len(Y)/chunk_size)
 num_epochs = 5
 
@@ -39,9 +39,15 @@ with tf.device('/gpu:0'):
     conv = input_data(shape=[None, image_dimensions[0], image_dimensions[1], 1], dtype=tf.float32)
     conv = conv-tf.reduce_min(conv)
     conv = -1*((conv/tf.reduce_max(conv))-0.5)
+    conv = conv_2d(conv, 8, 5, activation='leaky_relu')
+    conv = conv_2d(conv, 16, 5, activation='leaky_relu')
+    conv = conv_2d(conv, 32, 3, activation='leaky_relu')
+    conv = conv_2d(conv, 64, 3, activation='leaky_relu')
     conv = flatten(conv)
     conv = fully_connected(conv, 1024, activation='sigmoid')
-    conv = fully_connected(conv, 2)
+    conv1 = fully_connected(conv, 1)
+    conv2 = fully_connected(conv, 1)
+    conv = tf.concat([conv1, conv2], axis=1)
     conv = regression(conv, optimizer='adam', metric=R2(),
                          loss=mean_pairwise_squared_error,
                          learning_rate=0.001)
@@ -71,7 +77,7 @@ for j in range(num_epochs):
         print("Actual Value:" + str(Y_val[rand_example]))
         print("Pixel Distance:" + str(np.sqrt(np.sum(np.square(pred[0]-Y_val[rand_example])))))
         print("Num Chunks Completed: "+str(total_chunks_done))
-        if total_chunks_done%3 ==0:
+        if total_chunks_done%5 ==0:
             model.save(model_file=str(model_file+str(j)+str(i)))
             num_under_five = 0
             test_ds_len = len(Y_test)
