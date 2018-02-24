@@ -6,7 +6,7 @@ from tflearn.layers.estimator import regression
 from tflearn.metrics import R2
 import tensorflow as tf
 
-model_version = "15"
+model_version = "17"
 model_run = "1"
 model_file = '../Models/'+model_version+'/'+model_run+'/model'
 image_dimensions = (240, 320)
@@ -23,12 +23,12 @@ te_f = h5py.File("../Data/test-"+str(image_dimensions[0])+"x"+str(image_dimensio
 X_test = te_f['X']
 Y_test = te_f['Y']
 
-chunk_size = 5120
-batch_size = 128
-val_batch_size = 128
-test_batch_size = 128
+chunk_size = 10240
+batch_size = 256
+val_batch_size = 256
+test_batch_size = 256
 num_batches = int(len(Y)/chunk_size)
-num_epochs = 5
+num_epochs = 10
 
 with tf.device('/cpu:0'):
   tflearn.config.init_training_mode()
@@ -43,17 +43,11 @@ with tf.device('/gpu:0'):
     conv = conv_2d(conv, 4, 3, activation='leaky_relu')
     conv = conv_2d(conv, 4, 3, activation='leaky_relu')
     conv = conv_2d(conv, 4, 3, activation='leaky_relu')
-    conv = max_pool_2d(conv, 2, 2)
-    conv = conv_2d(conv, 4, 3, activation='leaky_relu')
-    conv = conv_2d(conv, 4, 3, activation='leaky_relu')
     conv = conv_2d(conv, 4, 3, activation='leaky_relu')
     conv = conv_2d(conv, 4, 3, activation='leaky_relu')
     conv = max_pool_2d(conv, 2, 2)
     conv = conv_2d(conv, 4, 3, activation='leaky_relu')
     conv = conv_2d(conv, 4, 3, activation='leaky_relu')
-    conv = conv_2d(conv, 4, 3, activation='leaky_relu')
-    conv = conv_2d(conv, 4, 3, activation='leaky_relu')
-    conv = max_pool_2d(conv, 2, 2)
     conv = conv_2d(conv, 4, 3, activation='leaky_relu')
     conv = conv_2d(conv, 4, 3, activation='leaky_relu')
     conv = conv_2d(conv, 4, 3, activation='leaky_relu')
@@ -62,30 +56,26 @@ with tf.device('/gpu:0'):
     conv = conv_2d(conv, 4, 3, activation='leaky_relu')
     conv = conv_2d(conv, 4, 3, activation='leaky_relu')
     conv = conv_2d(conv, 4, 3, activation='leaky_relu')
-    conv1 = conv_2d(conv, 4, 3, activation='leaky_relu')
+    conv = conv_2d(conv, 4, 3, activation='leaky_relu')
+    conv = conv_2d(conv, 4, 3, activation='leaky_relu')
+    conv = conv_2d(conv, 4, 3, activation='leaky_relu')
+    conv = max_pool_2d(conv, 2, 2)
+    conv = conv_2d(conv, 4, 3, activation='leaky_relu')
+    conv = conv_2d(conv, 4, 3, activation='leaky_relu')
+    conv = conv_2d(conv, 4, 3, activation='leaky_relu')
+    conv = conv_2d(conv, 4, 3, activation='leaky_relu')
+    conv = conv_2d(conv, 4, 3, activation='leaky_relu')
+    conv = conv_2d(conv, 4, 3, activation='leaky_relu')
+    conv = max_pool_2d(conv, 2, 2)
+    conv = conv_2d(conv, 4, 3, activation='leaky_relu')
+    conv = conv_2d(conv, 4, 3, activation='leaky_relu')
+    conv = conv_2d(conv, 4, 3, activation='leaky_relu')
+    conv = conv_2d(conv, 4, 3, activation='leaky_relu')
+    conv = conv_2d(conv, 4, 3, activation='leaky_relu')
+    conv = conv_2d(conv, 4, 3, activation='leaky_relu')
 
-    conv = conv_2d(input_conv, 2, 9, activation='leaky_relu')
-    conv = conv_2d(conv, 2, 9, activation='leaky_relu')
-    conv = conv_2d(conv, 2, 9, activation='leaky_relu')
-    conv = max_pool_2d(conv, 2, 2)
-    conv = conv_2d(conv, 2, 9, activation='leaky_relu')
-    conv = conv_2d(conv, 2, 9, activation='leaky_relu')
-    conv = conv_2d(conv, 2, 9, activation='leaky_relu')
-    conv = max_pool_2d(conv, 2, 2)
-    conv = conv_2d(conv, 2, 9, activation='leaky_relu')
-    conv = conv_2d(conv, 2, 9, activation='leaky_relu')
-    conv = conv_2d(conv, 2, 9, activation='leaky_relu')
-    conv = max_pool_2d(conv, 2, 2)
-    conv = conv_2d(conv, 2, 9, activation='leaky_relu')
-    conv = conv_2d(conv, 2, 9, activation='leaky_relu')
-    conv = conv_2d(conv, 2, 9, activation='leaky_relu')
-    conv = max_pool_2d(conv, 2, 2)
-    conv = conv_2d(conv, 2, 9, activation='leaky_relu')
-    conv = conv_2d(conv, 2, 9, activation='leaky_relu')
-    conv2 = conv_2d(conv, 2, 3, activation='leaky_relu')
-
-    conv = tf.concat([conv1, conv2], axis=3)
     conv = flatten(conv)
+    conv = fully_connected(conv, 128)
     conv = fully_connected(conv, 2)
     conv = regression(conv, optimizer='adam', metric=R2(),
                          loss=tf.losses.mean_squared_error,
