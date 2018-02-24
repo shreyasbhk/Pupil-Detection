@@ -24,9 +24,9 @@ X_test = te_f['X']
 Y_test = te_f['Y']
 
 chunk_size = 5120
-batch_size = 64
-val_batch_size = 64
-test_batch_size = 64
+batch_size = 128
+val_batch_size = 128
+test_batch_size = 128
 num_batches = int(len(Y)/chunk_size)
 num_epochs = 5
 
@@ -39,30 +39,52 @@ with tf.device('/gpu:0'):
     conv = conv-tf.reduce_min(conv)
     input_conv = -1*((conv/tf.reduce_max(conv))-0.5)
 
-    conv = conv_2d(input_conv, 8, 3, activation='leaky_relu')
-    conv = conv_2d(conv, 8, 3, activation='leaky_relu')
-    conv = conv_2d(conv, 8, 3, activation='leaky_relu')
-    conv = conv_2d(conv, 8, 3, activation='leaky_relu')
+    conv = conv_2d(input_conv, 4, 3, activation='leaky_relu')
+    conv = conv_2d(conv, 4, 3, activation='leaky_relu')
+    conv = conv_2d(conv, 4, 3, activation='leaky_relu')
+    conv = conv_2d(conv, 4, 3, activation='leaky_relu')
     conv = max_pool_2d(conv, 2, 2)
-    conv = conv_2d(conv, 8, 3, activation='leaky_relu')
-    conv = conv_2d(conv, 8, 3, activation='leaky_relu')
-    conv = conv_2d(conv, 8, 3, activation='leaky_relu')
-    conv = conv_2d(conv, 8, 3, activation='leaky_relu')
+    conv = conv_2d(conv, 4, 3, activation='leaky_relu')
+    conv = conv_2d(conv, 4, 3, activation='leaky_relu')
+    conv = conv_2d(conv, 4, 3, activation='leaky_relu')
+    conv = conv_2d(conv, 4, 3, activation='leaky_relu')
     conv = max_pool_2d(conv, 2, 2)
-    conv = conv_2d(conv, 8, 3, activation='leaky_relu')
-    conv = conv_2d(conv, 8, 3, activation='leaky_relu')
-    conv = conv_2d(conv, 8, 3, activation='leaky_relu')
-    conv = conv_2d(conv, 8, 3, activation='leaky_relu')
+    conv = conv_2d(conv, 4, 3, activation='leaky_relu')
+    conv = conv_2d(conv, 4, 3, activation='leaky_relu')
+    conv = conv_2d(conv, 4, 3, activation='leaky_relu')
+    conv = conv_2d(conv, 4, 3, activation='leaky_relu')
     conv = max_pool_2d(conv, 2, 2)
-    conv = conv_2d(conv, 8, 3, activation='leaky_relu')
-    conv = conv_2d(conv, 8, 3, activation='leaky_relu')
-    conv = conv_2d(conv, 8, 3, activation='leaky_relu')
-    conv = conv_2d(conv, 8, 3, activation='leaky_relu')
+    conv = conv_2d(conv, 4, 3, activation='leaky_relu')
+    conv = conv_2d(conv, 4, 3, activation='leaky_relu')
+    conv = conv_2d(conv, 4, 3, activation='leaky_relu')
+    conv = conv_2d(conv, 4, 3, activation='leaky_relu')
     conv = max_pool_2d(conv, 2, 2)
-    conv = conv_2d(conv, 8, 3, activation='leaky_relu')
-    conv = conv_2d(conv, 8, 3, activation='leaky_relu')
-    conv = conv_2d(conv, 8, 3, activation='leaky_relu')
-    conv = conv_2d(conv, 8, 3, activation='leaky_relu')
+    conv = conv_2d(conv, 4, 3, activation='leaky_relu')
+    conv = conv_2d(conv, 4, 3, activation='leaky_relu')
+    conv = conv_2d(conv, 4, 3, activation='leaky_relu')
+    conv1 = conv_2d(conv, 4, 3, activation='leaky_relu')
+
+    conv = conv_2d(input_conv, 2, 9, activation='leaky_relu')
+    conv = conv_2d(conv, 2, 9, activation='leaky_relu')
+    conv = conv_2d(conv, 2, 9, activation='leaky_relu')
+    conv = max_pool_2d(conv, 2, 2)
+    conv = conv_2d(conv, 2, 9, activation='leaky_relu')
+    conv = conv_2d(conv, 2, 9, activation='leaky_relu')
+    conv = conv_2d(conv, 2, 9, activation='leaky_relu')
+    conv = max_pool_2d(conv, 2, 2)
+    conv = conv_2d(conv, 2, 9, activation='leaky_relu')
+    conv = conv_2d(conv, 2, 9, activation='leaky_relu')
+    conv = conv_2d(conv, 2, 9, activation='leaky_relu')
+    conv = max_pool_2d(conv, 2, 2)
+    conv = conv_2d(conv, 2, 9, activation='leaky_relu')
+    conv = conv_2d(conv, 2, 9, activation='leaky_relu')
+    conv = conv_2d(conv, 2, 9, activation='leaky_relu')
+    conv = max_pool_2d(conv, 2, 2)
+    conv = conv_2d(conv, 2, 9, activation='leaky_relu')
+    conv = conv_2d(conv, 2, 9, activation='leaky_relu')
+    conv2 = conv_2d(conv, 2, 3, activation='leaky_relu')
+
+    conv = tf.concat([conv1, conv2], axis=3)
     conv = flatten(conv)
     conv = fully_connected(conv, 2)
     conv = regression(conv, optimizer='adam', metric=R2(),
@@ -97,6 +119,8 @@ for j in range(num_epochs):
         if total_chunks_done%5 ==0:
             model.save(model_file=str(model_file+str(j)+str(i)))
             num_under_five = 0
+            num_under_ten = 0
+            num_under_fifteen = 0
             test_ds_len = len(Y_test)
             for t in range(int(test_ds_len/test_batch_size)):
                 strt = test_batch_size*t
@@ -106,7 +130,13 @@ for j in range(num_epochs):
                 for dist in distances:
                     if dist <= 5:
                         num_under_five += 1
-            print("Model Testing Accuracy: " + str(num_under_five/test_ds_len))
+                    if dist <= 10:
+                        num_under_ten += 1
+                    if dist <= 15:
+                        num_under_fifteen += 1
+            print("Model Testing 5 Pixels Accuracy: " + str(num_under_five/test_ds_len))
+            print("Model Testing 10 Pixels Accuracy: " + str(num_under_ten/test_ds_len))
+            print("Model Testing 15 Pixels Accuracy: " + str(num_under_fifteen/test_ds_len))
         total_chunks_done += 1
 
 tr_f.close()
