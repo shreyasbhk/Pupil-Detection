@@ -6,7 +6,7 @@ from tflearn.layers.estimator import regression
 from tflearn.metrics import R2
 import tensorflow as tf
 
-model_version = "18"
+model_version = "19"
 model_run = "1"
 model_file = '../Models/'+model_version+'/'+model_run+'/model'
 image_dimensions = (240, 320)
@@ -39,13 +39,15 @@ with tf.device('/gpu:0'):
     conv = conv-tf.reduce_min(conv)
     input_conv = -1*((conv/tf.reduce_max(conv))-0.5)
 
-    conv = conv_2d(input_conv, 8, 3, activation='leaky_relu')
-    conv = conv_2d(conv, 8, 3, activation='leaky_relu')
+    conv = conv_2d(input_conv, 4, 15, activation='leaky_relu')
+    conv1 = conv_2d(input_conv, 4, 9, activation='leaky_relu')
+    conv2 = conv_2d(input_conv, 4, 5, activation='leaky_relu')
+    conv3 = conv_2d(input_conv, 4, 3, activation='leaky_relu')
+    conv = tf.concat([conv, conv1, conv2, conv3], axis=3)
     conv = max_pool_2d(conv, 2, 2)
-    conv = conv_2d(conv, 8, 3, activation='leaky_relu')
-    conv = conv_2d(conv, 8, 3, activation='leaky_relu')
-    conv = conv_2d(conv, 8, 3, activation='leaky_relu')
-    conv = conv_2d(conv, 8, 3, activation='leaky_relu')
+    conv = conv_2d(conv, 8, 5, activation='leaky_relu')
+    conv = conv_2d(conv, 8, 5, activation='leaky_relu')
+    conv = conv_2d(conv, 8, 5, activation='leaky_relu')
     conv = max_pool_2d(conv, 2, 2)
     conv = conv_2d(conv, 8, 3, activation='leaky_relu')
     conv = conv_2d(conv, 8, 3, activation='leaky_relu')
