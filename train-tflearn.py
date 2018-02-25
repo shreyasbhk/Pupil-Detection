@@ -6,7 +6,7 @@ from tflearn.layers.estimator import regression
 from tflearn.metrics import R2
 import tensorflow as tf
 
-model_version = "21"
+model_version = "22"
 model_run = "1"
 model_file = '../Models/'+model_version+'/'+model_run+'/model'
 image_dimensions = (240, 320)
@@ -28,31 +28,32 @@ batch_size = 512
 val_batch_size = 512
 test_batch_size = 512
 num_batches = int(len(Y)/chunk_size)
-num_epochs = 20
+num_epochs = 30
 
 with tf.device('/cpu:0'):
   tflearn.config.init_training_mode()
-tflearn.init_graph(num_cores=8, gpu_memory_fraction=0.9, soft_placement=True)
+tflearn.init_graph(num_cores=8, gpu_memory_fraction=0.95, soft_placement=True)
 
 with tf.device('/gpu:0'):
     conv = input_data(shape=[None, image_dimensions[0], image_dimensions[1], 1], dtype=tf.float32)
     conv = conv-tf.reduce_min(conv)
     input_conv = -1*((conv/tf.reduce_max(conv))-0.5)
 
-    conv = conv_2d(input_conv, 8, 9, activation='leaky_relu')
+    conv = conv_2d(input_conv, 4, 9, activation='leaky_relu')
+    conv = conv_2d(conv, 4, 9, activation='leaky_relu')
     conv = max_pool_2d(conv, 2, 2)
     conv = conv_2d(conv, 8, 9, activation='leaky_relu')
     conv = max_pool_2d(conv, 2, 2)
     conv = conv_2d(conv, 8, 7, activation='leaky_relu')
     conv = max_pool_2d(conv, 2, 2)
     conv = conv_2d(conv, 8, 7, activation='leaky_relu')
+    conv = conv_2d(conv, 8, 7, activation='leaky_relu')
     conv = max_pool_2d(conv, 2, 2)
-    conv = conv_2d(conv, 8, 3, activation='leaky_relu')
-    conv = conv_2d(conv, 8, 3, activation='leaky_relu')
-    conv = conv_2d(conv, 8, 3, activation='leaky_relu')
-    conv = conv_2d(conv, 8, 3, activation='leaky_relu')
+    conv = conv_2d(conv, 8, 5, activation='leaky_relu')
+    conv = conv_2d(conv, 8, 5, activation='leaky_relu')
+    conv = conv_2d(conv, 8, 5, activation='leaky_relu')
     conv = flatten(conv)
-    conv = fully_connected(conv, 128, activation='leaky_relu')
+    conv = fully_connected(conv, 256, activation='leaky_relu')
     conv = fully_connected(conv, 2)
     conv = regression(conv, optimizer='adam', metric=R2(),
                          loss=tf.losses.mean_squared_error,
@@ -88,6 +89,7 @@ for j in range(num_epochs):
             num_under_five = 0
             num_under_ten = 0
             num_under_fifteen = 0
+            num_under_twenty = 0
             test_ds_len = len(Y_test)
             for t in range(int(test_ds_len/test_batch_size)):
                 strt = test_batch_size*t
@@ -101,9 +103,12 @@ for j in range(num_epochs):
                         num_under_ten += 1
                     if dist <= 15:
                         num_under_fifteen += 1
+                    if dist <= 20:
+                        num_under_fifteen += 1
             print("Model Testing 5 Pixels Accuracy: " + str(num_under_five/test_ds_len))
             print("Model Testing 10 Pixels Accuracy: " + str(num_under_ten/test_ds_len))
             print("Model Testing 15 Pixels Accuracy: " + str(num_under_fifteen/test_ds_len))
+            print("Model Testing 20 Pixels Accuracy: " + str(num_under_twenty/test_ds_len))
         total_chunks_done += 1
 
 tr_f.close()

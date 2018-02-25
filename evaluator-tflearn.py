@@ -60,13 +60,20 @@ LOGIC - Get model to first evaluate to a good R^2 value and then you can evaluat
 '''
 
 num_under_five = 0
-
+num_under_ten = 0
+num_under_fifteen = 0
+test_ds_len = len(Y)
 for i in range(len(Y)):
     pred = model.predict([X[i]])
-    dist = np.sqrt(np.sum(np.square(pred[0]-Y[i])))
-    print(pred-Y[i])
-    if(dist < 5):
+    dist = np.sqrt(np.sum(np.square(np.subtract(pred[0], Y[i])), axis=1, keepdims=True))
+    if dist <= 5:
         num_under_five += 1
-print(num_under_five/(len(Y)))
+    if dist <= 10:
+        num_under_ten += 1
+    if dist <= 15:
+        num_under_fifteen += 1
+print("Model Testing 5 Pixels Accuracy: " + str(num_under_five/test_ds_len))
+print("Model Testing 10 Pixels Accuracy: " + str(num_under_ten/test_ds_len))
+print("Model Testing 15 Pixels Accuracy: " + str(num_under_fifteen/test_ds_len))
 
 te_f.close()
