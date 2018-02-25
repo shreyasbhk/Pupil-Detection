@@ -104,7 +104,9 @@ for j in range(num_epochs):
                     if dist <= 15:
                         num_under_fifteen += 1
                     if dist <= 20:
-                        num_under_fifteen += 1
+                        num_under_twenty += 1
+            print("Epoch #: " + str(num_under_five/test_ds_len))
+            print("Batch #: " + str(num_under_five/test_ds_len))
             print("Model Testing 5 Pixels Accuracy: " + str(num_under_five/test_ds_len))
             print("Model Testing 10 Pixels Accuracy: " + str(num_under_ten/test_ds_len))
             print("Model Testing 15 Pixels Accuracy: " + str(num_under_fifteen/test_ds_len))
