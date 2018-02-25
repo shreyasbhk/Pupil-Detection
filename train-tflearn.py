@@ -41,9 +41,6 @@ with tf.device('/gpu:0'):
 
     conv = conv_2d(input_conv, 8, 3, activation='leaky_relu')
     conv = conv_2d(conv, 8, 3, activation='leaky_relu')
-    conv = conv_2d(conv, 8, 3, activation='leaky_relu')
-    conv = conv_2d(conv, 8, 3, activation='leaky_relu')
-    conv = conv_2d(conv, 8, 3, activation='leaky_relu')
     conv = max_pool_2d(conv, 2, 2)
     conv = conv_2d(conv, 8, 3, activation='leaky_relu')
     conv = conv_2d(conv, 8, 3, activation='leaky_relu')
