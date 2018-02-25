@@ -28,7 +28,7 @@ batch_size = 512
 val_batch_size = 512
 test_batch_size = 512
 num_batches = int(len(Y)/chunk_size)
-num_epochs = 30
+num_epochs = 50
 
 with tf.device('/cpu:0'):
   tflearn.config.init_training_mode()
@@ -44,6 +44,7 @@ with tf.device('/gpu:0'):
     conv = max_pool_2d(conv, 2, 2)
     conv = conv_2d(conv, 8, 9, activation='leaky_relu')
     conv = max_pool_2d(conv, 2, 2)
+    conv = conv_2d(conv, 8, 7, activation='leaky_relu')
     conv = conv_2d(conv, 8, 7, activation='leaky_relu')
     conv = max_pool_2d(conv, 2, 2)
     conv = conv_2d(conv, 8, 7, activation='leaky_relu')
@@ -90,6 +91,7 @@ for j in range(num_epochs):
             num_under_ten = 0
             num_under_fifteen = 0
             num_under_twenty = 0
+            num_under_twenty_five = 0
             test_ds_len = len(Y_test)
             for t in range(int(test_ds_len/test_batch_size)):
                 strt = test_batch_size*t
@@ -105,12 +107,15 @@ for j in range(num_epochs):
                         num_under_fifteen += 1
                     if dist <= 20:
                         num_under_twenty += 1
-            print("Epoch #: " + str(num_under_five/test_ds_len))
-            print("Batch #: " + str(num_under_five/test_ds_len))
+                    if dist <= 25:
+                        num_under_twenty_five += 1
+            print("Epoch #: " + str(j))
+            print("Batch #: " + str(i))
             print("Model Testing 5 Pixels Accuracy: " + str(num_under_five/test_ds_len))
             print("Model Testing 10 Pixels Accuracy: " + str(num_under_ten/test_ds_len))
             print("Model Testing 15 Pixels Accuracy: " + str(num_under_fifteen/test_ds_len))
             print("Model Testing 20 Pixels Accuracy: " + str(num_under_twenty/test_ds_len))
+            print("Model Testing 25 Pixels Accuracy: " + str(num_under_twenty_five/test_ds_len))
         total_chunks_done += 1
 
 tr_f.close()
