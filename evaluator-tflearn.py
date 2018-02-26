@@ -3,11 +3,12 @@ import h5py
 from tflearn.layers.core import *
 from tflearn.layers.conv import *
 from tflearn.layers.estimator import regression
+from tflearn.metrics import R2
 import tensorflow as tf
 
-model_version = "12"
+model_version = "22"
 model_run = "1"
-epoch = "5"
+epoch = "45"
 batch = "5"
 
 model_file = '../Models/'+model_version+'/'+model_run+'/model'+epoch+batch
@@ -27,6 +28,7 @@ with tf.device('/cpu:0'):
     conv = conv_2d(conv, 8, 9, activation='leaky_relu')
     conv = max_pool_2d(conv, 2, 2)
     conv = conv_2d(conv, 8, 7, activation='leaky_relu')
+    conv = conv_2d(conv, 8, 7, activation='leaky_relu')
     conv = max_pool_2d(conv, 2, 2)
     conv = conv_2d(conv, 8, 7, activation='leaky_relu')
     conv = conv_2d(conv, 8, 7, activation='leaky_relu')
@@ -37,7 +39,7 @@ with tf.device('/cpu:0'):
     conv = flatten(conv)
     conv = fully_connected(conv, 256, activation='leaky_relu')
     conv = fully_connected(conv, 2)
-    conv = regression(conv, optimizer='adam',
+    conv = regression(conv, optimizer='adam', metric=R2(),
                          loss=tf.losses.mean_squared_error,
                          learning_rate=0.001)
     model = tflearn.DNN(conv)
@@ -52,18 +54,34 @@ LOGIC - Get model to first evaluate to a good R^2 value and then you can evaluat
 num_under_five = 0
 num_under_ten = 0
 num_under_fifteen = 0
+num_under_twenty = 0
+num_under_twenty_five = 0
+num_under_th = 0
+num_under_thf= 0
 test_ds_len = len(Y)
 for i in range(len(Y)):
     pred = model.predict([X[i]])
-    dist = np.sqrt(np.sum(np.square(np.subtract(pred[0], Y[i])), axis=1, keepdims=True))
+    dist = np.sqrt(np.sum(np.square(np.subtract(pred[0], Y[i]))))
     if dist <= 5:
         num_under_five += 1
     if dist <= 10:
         num_under_ten += 1
     if dist <= 15:
         num_under_fifteen += 1
+    if dist <= 20:
+        num_under_twenty += 1
+    if dist <= 25:
+        num_under_twenty_five += 1
+    if dist <= 30:
+        num_under_th += 1
+    if dist <= 35:
+        num_under_thf += 1
 print("Model Testing 5 Pixels Accuracy: " + str(num_under_five/test_ds_len))
 print("Model Testing 10 Pixels Accuracy: " + str(num_under_ten/test_ds_len))
 print("Model Testing 15 Pixels Accuracy: " + str(num_under_fifteen/test_ds_len))
+print("Model Testing 20 Pixels Accuracy: " + str(num_under_twenty/test_ds_len))
+print("Model Testing 25 Pixels Accuracy: " + str(num_under_twenty_five/test_ds_len))
+print("Model Testing 30 Pixels Accuracy: " + str(num_under_th/test_ds_len))
+print("Model Testing 35 Pixels Accuracy: " + str(num_under_thf/test_ds_len))
 
 te_f.close()
